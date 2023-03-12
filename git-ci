@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Pull and push on a Git repository but only if it has a valid remote and state is clean.
+# This does a job similar to git sync but is more suitable for automated envs.
 
 # usage: git-sync <path-to-parent-dir> (optional)
 
