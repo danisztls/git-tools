@@ -38,7 +38,7 @@ _check() {
 _pull() {
   # TODO: Don't fetch all in shallow repos
   # NOTE: Fetching all is important to fetch upstream commits on forks.
-  git pull --all --ff-only
+  git pull --all --ff-only --rebase
 }
 
 # Push changes
