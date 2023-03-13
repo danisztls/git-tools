@@ -31,7 +31,7 @@ _queue() {
   # run n in parallel
   # NOTE: GitHub limit is 4 simultaneous connections
   # sem -j 4 "$_command" "$path"
-  sem --jobs 4 "cd $_path; $_command"
+  sem --jobs 4 "cd $_path; $_command; printf '\n'"
 }
 
 # Main
