@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Run a command on all Git repos under a path
+
+# usage: git-all <action> <path-to-parent-dir> (optional)
+# e.g.: git-all git-pull-safe ~
+
+[ "$1" ] && _command="$1" || exit 1
+[ "$2" ] && _path="$2"
+[ "$3" ] && _ignore_file="$3"
+
+# Change dir to inputted path if valid
+if [ -d "$_path" ]; then
+  cd "$_path" || exit
+fi
+
+# Lib
+_queue() {
+  local _repo _path
+
+  _repo="$1"
+  _path="${_repo%.git/}"
+
+  # FIXME: Commands with arguments are not properly evaluated.
+
+  # run one by one
+  # sem -j 1 "cd $_path; $_command"
+
+  # run max of cpu cores
+  # sem -j+0 "cd $_path; $_command"
+
+  # run n in parallel
+  # NOTE: GitHub limit is 4 simultaneous connections
+  # sem -j 4 "$_command" "$path"
+  sem --jobs 4 "cd $_path; $_command"
+}
+
+# Main
+
+if [ -f "$_ignore_file" ]; then
+  mapfile -t repos < <(\
+                       fd -t d '\.git$' \
+                       --unrestricted \
+                       --exclude "**/*cache*" \
+                       --exclude "**/Trash/" \
+                       --ignore-file "$_ignore_file" \
+                      )
+else
+  mapfile -t repos < <(\
+                       fd -t d '\.git$' \
+                       --unrestricted \
+                       --exclude "**/*cache*" \
+                       --exclude "**/Trash/" \
+                      )
+fi
+
+for _repo in "${repos[@]}"; do
+  _queue "$_repo"
+done
+
+# wait for tasks to finish
+sem --wait
