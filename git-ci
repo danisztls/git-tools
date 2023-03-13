@@ -38,10 +38,10 @@ _check() {
 # Pull changes
 _pull() {
   if git rev-parse --is-shallow-repository >/dev/null; then
-    git pull --ff-only --rebase --porcelain
+    git pull --ff-only --rebase
   else
     # NOTE: Fetching all is important to fetch upstream commits on forks.
-    git pull --all --ff-only --rebase --porcelain
+    git pull --all --ff-only --rebase
   fi
 }
 
@@ -61,7 +61,7 @@ _push() {
   # don't push on gerrit repos.
   git remote | grep gerrit && return 1
 
-  git push --porcelain
+  git push
 }
 
 printf "${_strong}Working on ${_yellow}%s${_reset}\n" "$repo"
