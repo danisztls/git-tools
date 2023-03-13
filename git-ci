@@ -20,30 +20,48 @@ fi
 # get repo name
 path="$(pwd)"
 repo="${path##/*/}"
+_repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
 
 # Check before acting
 _check() {
   # check if repo has remotes
   [ "$(git remote | wc -l)" = 0 ] && return 1
 
-  # TODO: check if branch is main/master otherwise only fetch
-
   # check if repo is in a dirty state
   # NOTE: it may be necessary to run git diff first to ensure the index is up to date
   git diff --quiet; git diff-index --quiet HEAD -- || return 1
   return 0
+
+  # TODO: Improve dirty/valid repo detection.
 }
 
 # Pull changes
 _pull() {
-  # TODO: Don't fetch all in shallow repos
-  # NOTE: Fetching all is important to fetch upstream commits on forks.
-  git pull --all --ff-only --rebase
+  if git rev-parse --is-shallow-repository >/dev/null; then
+    git pull --ff-only --rebase --porcelain
+  else
+    # NOTE: Fetching all is important to fetch upstream commits on forks.
+    git pull --all --ff-only --rebase --porcelain
+  fi
 }
 
 # Push changes
 _push() {
-  git push
+  # check if branch is main/master otherwise return 
+  _branch=$(git symbolic-ref --short HEAD)
+  ! [ "$_branch" = "main" ] && ! [ "$_branch" = "master" ] && return 1 
+
+  # Check for unpushed commits
+  [ "$(git rev-list HEAD@\{upstream\}..HEAD | wc -l)" = 0 ] && return 1
+
+  # NOTE: Authentication is completely server-side and Git can't know if user
+  # is allowed to push. A workaround to prevent pushes is to set 'pushurl' to
+  # an invalid value.
+
+  # don't push on gerrit repos.
+  git remote | grep gerrit && return 1
+
+  git push --porcelain
 }
 
 printf "${_strong}Working on ${_yellow}%s${_reset}\n" "$repo"
