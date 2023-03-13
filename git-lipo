@@ -28,7 +28,7 @@ fi
 
 _cleanRepo() {
   # check for repo at current path
-  _project_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit
+  _repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit
 
   # check database validity
   git fsck
@@ -37,7 +37,7 @@ _cleanRepo() {
   git reflog expire --expire-unreachable=now --all
 
   # clean old objects 
-  [ -f "_project_root/.git/lfs" ] && git-lfs prune
+  [ -f "_repo_root/.git/lfs" ] && git-lfs prune
   git gc --prune=now --aggressive
 }
 
