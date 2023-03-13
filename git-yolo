@@ -1,0 +1,15 @@
+#!/bin/sh
+# Stage all changes, commit and push to remote.
+
+# usage: git-yolo <path-to-repo> (optional)
+
+# cd to repo if valid path is inputted
+if [ -d "$1/.git" ]; then
+  cd "$1" || exit
+fi
+
+git add --all
+git commit -m "update"
+
+# push if remotes are set
+[ "$(git remote | wc -l)" -gt 0 ] && git push
