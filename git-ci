@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Pull and push on a Git repository but only if it has a valid remote and state is clean.
 # This does a job similar to git sync but is more suitable for automated envs.
 
@@ -24,7 +24,7 @@ repo="${path##/*/}"
 # Check before acting
 _check() {
   # check if repo has remotes
-  [ "$(git remote | wc -l)" == 0 ] && return 1
+  [ "$(git remote | wc -l)" = 0 ] && return 1
 
   # TODO: check if branch is main/master otherwise only fetch
 
