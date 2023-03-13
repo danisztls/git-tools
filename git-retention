@@ -1,0 +1,20 @@
+#!/bin/sh
+# Rewrite history of automatic commits on a repo following a retention policy. 
+
+# usage: git-retention
+
+# cd to repo if valid path is inputted
+if [ -d "$1/.git" ]; then
+  cd "$1" || exit
+fi
+
+# today="$(date '+%y-%m-%d')"
+
+echo "This is a stub"
+
+# TODO: Finish this draft.
+#
+# Policy:
+# no grouping on the same day
+# daily for the last month
+# monthly for older
