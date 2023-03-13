@@ -30,6 +30,9 @@ _cleanRepo() {
   # check for repo at current path
   _project_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit
 
+  # check database validity
+  git fsck
+
   # NOTE: Does this make a difference. I think 'git gc prune=now' also does this
   git reflog expire --expire-unreachable=now --all
 
