@@ -32,7 +32,7 @@ else
   _log_alert="${_fmt_red}ALERT: %s${_fmt_clear}\n"
   _log_crit="${_fmt_red}CRITICAL: %s${_fmt_clear}\n"
   _log_error="${_fmt_red}ERROR: %s${_fmt_clear}\n"
-  _log_warning="${_fmt_yellow}WARNING: %s$_fmt_clear}\n"
+  _log_warning="${_fmt_yellow}WARNING: %s${_fmt_clear}\n"
   _log_notice="${_fmt_bold}NOTICE: %s${_fmt_clear}\n"
   _log_info="${_fmt_clear}INFO: %s\n${_fmt_clear}"
   _log_debug="${_fmt_gray}DEBUG: %s${_fmt_clear}\n"
