@@ -34,7 +34,7 @@ else
   _log_error="${_fmt_red}ERROR: %s${_fmt_clear}\n"
   _log_warning="${_fmt_yellow}WARNING: %s${_fmt_clear}\n"
   _log_notice="${_fmt_bold}NOTICE: %s${_fmt_clear}\n"
-  _log_info="${_fmt_clear}INFO: %s\n${_fmt_clear}"
+  _log_info="${_fmt_clear}INFO: %s\n${_fmt_clear}\n"
   _log_debug="${_fmt_gray}DEBUG: %s${_fmt_clear}\n"
 fi
 
@@ -99,8 +99,9 @@ _push() {
   git push
 }
 
-printf "$_log_notice" "Working on '$_repo_name'"
+# TODO: Move start/end logging to git-all
+printf "${_fmt_bold}%s: ${_fmt_blue}START${_fmt_clear}\n" "$_repo_name"
 _check
 _pull
 _push
-printf "$_log_notice" "Done work '$_repo_name'"
+printf "${_fmt_bold}%s: ${_fmt_blue}END${_fmt_clear}\n" "$_repo_name"
