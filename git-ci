@@ -56,9 +56,8 @@ _check() {
     exit 1
   fi
 
-  # check if repo is in a dirty state
   # NOTE: it may be necessary to run git diff first to ensure the index is up to date
-  if ! git diff --quiet; git diff-index --quiet HEAD -- ; then
+  if ! (git diff --quiet; git diff-index --quiet HEAD --) ; then
     printf "$_log_error" "Repository is in a dirty state."
     exit 1
   fi
