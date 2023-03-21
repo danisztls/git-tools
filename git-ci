@@ -65,7 +65,7 @@ _check() {
 
 # Pull changes
 _pull() {
-  if git rev-parse --is-shallow-repository >/dev/null; then
+   if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
     printf "$_log_info" "Repository is shallow."
     git pull --ff-only --rebase
   else
