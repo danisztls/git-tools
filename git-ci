@@ -2,7 +2,7 @@
 # Pull and push on a Git repository but only if it makes sense.
 # This does a job similar to git sync but smarter and more suitable for automated envs.
 
-# usage: git-sync <path-to-parent-dir> (optional)
+# usage: git-ci <path-to-parent-dir> (optional)
 
 # Logging 
 # shellcheck disable=2059
