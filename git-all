@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Run a command on all Git repos under a path
 
-# usage: git-all <action> <path-to-parent-dir> (optional)
-# e.g.: git-all git-pull-safe ~
+# check args is >= 2
+if ! [ "$#" -ge 2 ]; then
+    echo -e "Missing arguments!\n"
+    echo -e "Check usage: git-all <path-to-parent-dir> <command> <command-args>\n"
+  exit 1
+fi
 
-[ "$1" ] && _command="$1" || exit 1
-[ "$2" ] && _path="$2"
-[ "$3" ] && _ignore_file="$3"
+_path="$1"
+_command="${*:2}" # 2nd to nth
 
 # Change dir to inputted path if valid
 if [ -d "$_path" ]; then
@@ -19,8 +22,6 @@ _queue() {
 
   _repo="$1"
   _path="${_repo%.git/}"
-
-  # FIXME: Commands with arguments are not properly evaluated.
 
   # run one by one
   # sem -j 1 "cd $_path; $_command"
@@ -35,14 +36,13 @@ _queue() {
 }
 
 # Main
-
-if [ -f "$_ignore_file" ]; then
+if [ -f "$GIT_ALL_IGNORE_FILE" ]; then
   mapfile -t repos < <(\
                        fd -t d '\.git$' \
                        --unrestricted \
                        --exclude "**/*cache*" \
                        --exclude "**/Trash/" \
-                       --ignore-file "$_ignore_file" \
+                       --ignore-file "$GIT_ALL_IGNORE_FILE" \
                       )
 else
   mapfile -t repos < <(\
