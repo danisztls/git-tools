@@ -42,10 +42,6 @@ if [ -d "$1" ]; then
   cd "$1" || exit
 fi
 
-# get repo name
-_path="$(pwd)"
-_repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
-
 # Check before acting
 _check() {
   if [ "$(git remote | wc -l)" = 0 ]; then
