@@ -36,8 +36,8 @@ _cleanRepo() {
   # NOTE: Does this make a difference. I think 'git gc prune=now' also does this
   git reflog expire --expire-unreachable=now --all
 
-  # clean old objects 
-  [ -f "_repo_root/.git/lfs" ] && git-lfs prune
+  # clean old objects
+  [ -d "$_repo_root/.git/lfs" ] && git-lfs prune
   git gc --prune=now --aggressive
 }
 
