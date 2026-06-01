@@ -49,26 +49,19 @@ if [ -d "$_path" ]; then
 fi
 
 _queue() {
-  local _repo _path
+  local _repo _path _repo_name
 
   _repo="$1"
   _path="${_repo%.git/}"
-  _repo_name="${_path##/*/}"
+  _repo_name="${_path%/}"
+  _repo_name="${_repo_name##*/}"
 
-  # run one by one
-  # sem -j 1 "cd $_path; $_command"
-
-  # run max of cpu cores
-  # sem -j+0 "cd $_path; $_command"
-
-  # run n in parallel
-  # NOTE: GitHub limit is 4 simultaneous connections
-  # sem -j 4 "$_command" "$path"
+  # Run the whole job as a single argument so it executes inside the repo and
+  # in parallel. Passing the parts as separate words would hand only `cd` to
+  # sem and run the command in the foreground in the wrong directory.
+  # NOTE: GitHub limit is 4 simultaneous connections.
   sem --jobs 4 \
-    cd "$_path";\
-    printf "$_log_info" "START: $_repo_name";\
-    $_command;\
-    printf "\n$_log_info" "END: $_repo_name"
+    "cd '$_path' && printf '$_log_info' 'START: $_repo_name' && $_command && printf '\n$_log_info' 'END: $_repo_name'"
 }
 
 if [ -f "$GIT_ALL_IGNORE_FILE" ]; then
