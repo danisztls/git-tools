@@ -39,59 +39,86 @@ fi
 # Main
 # change dir to inputted path if valid
 if [ -d "$1" ]; then
-  cd "$1" || exit
+  cd "$1" || exit 1
 fi
 
 # Check before acting
 _check() {
-  if [ "$(git remote | wc -l)" = 0 ]; then
-    printf "$_log_error" "Repository has no remotes."
-    exit 1
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf "$_log_error" "Not a Git repository."
+    return 1
   fi
 
-  # NOTE: it may be necessary to run git diff first to ensure the index is up to date
-  if ! (git diff --quiet; git diff-index --quiet HEAD --) ; then
-    printf "$_log_error" "Repository is in a dirty state."
-    exit 1
+  if [ -z "$(git remote)" ]; then
+    printf "$_log_error" "Repository has no remotes."
+    return 1
+  fi
+
+  # Refresh the index so stat-dirty entries don't false-positive, then bail on
+  # ANY staged/unstaged/untracked change (--porcelain already honors .gitignore).
+  git update-index -q --refresh
+  if [ -n "$(git status --porcelain)" ]; then
+    printf "$_log_warning" "Repository is dirty. Skipping."
+    return 1
   fi
 }
 
 # Pull changes
 _pull() {
-   if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
-    printf "$_log_info" "Repository is shallow."
-    git pull --ff-only --rebase
-  else
-    # NOTE: Fetching all is important to fetch upstream commits on forks.
-    git pull --all --ff-only --rebase
+  # NOTE: Fetching all is important to fetch upstream commits on forks.
+  # --all preserves shallowness on shallow clones, so no special-casing needed.
+  git fetch --all --prune || return 1
+
+  # Nothing to integrate without an upstream for the current branch.
+  if ! git rev-parse --symbolic-full-name '@{upstream}' >/dev/null 2>&1; then
+    printf "$_log_info" "No upstream configured. Skipping integration."
+    return 0
+  fi
+
+  # Fast-forward only: refuse to auto-rebase/merge divergent history unattended.
+  # If two machines both committed before syncing, that's a conflict for a human.
+  if ! git merge --ff-only '@{upstream}'; then
+    printf "$_log_warning" "Local history diverged from upstream. Manual resolution needed."
+    return 1
   fi
 }
 
 # Push changes
 _push() {
-  _branch=$(git symbolic-ref --short HEAD)
-  if ! [ "$_branch" = "main" ] && ! [ "$_branch" = "master" ]; then
-    printf "$_log_warning" "Current branch is not main/master."
-    return 1 
-  fi
-
-  if [ "$(git rev-list HEAD@\{upstream\}..HEAD | wc -l)" = 0 ]; then
-    printf "$_log_info" "No commits to push."
+  _branch=$(git symbolic-ref --short -q HEAD) || {
+    printf "$_log_warning" "Detached HEAD. Skipping push."
     return 0
-  fi
+  }
+
+  case "$_branch" in
+    main|master) ;;
+    *)
+      printf "$_log_warning" "Branch '$_branch' is not main/master. Skipping push."
+      return 0 ;;
+  esac
 
   # NOTE: Authentication is completely server-side and Git can't know if user
   # is allowed to push. A workaround to prevent pushes is to set 'pushurl' to
   # an invalid value.
 
-  if git remote | grep gerrit; then
+  if git remote | grep -q gerrit; then
     printf "$_log_info" "Gerrit repository. Skip push."
+    return 0
+  fi
+
+  if ! git rev-parse --symbolic-full-name '@{upstream}' >/dev/null 2>&1; then
+    printf "$_log_info" "No upstream configured. Skipping push."
+    return 0
+  fi
+
+  if [ "$(git rev-list --count '@{upstream}'..HEAD)" -eq 0 ]; then
+    printf "$_log_info" "No commits to push."
     return 0
   fi
 
   git push
 }
 
-_check
-_pull
+_check || exit 1
+_pull  || exit 1
 _push
